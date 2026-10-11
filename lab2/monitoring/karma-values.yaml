@@ -1,0 +1,21 @@
+﻿image:
+  repository: ghcr.io/prymitive/karma
+  tag: v0.133
+  pullPolicy: IfNotPresent
+
+env:
+  ALERTMANAGER_URI: "http://monitoring-kube-prometheus-alertmanager.monitoring.svc.cluster.local:9093"
+
+service:
+  main:
+    ports:
+      http:
+        port: 8080
+
+ingress:
+  main:
+    enabled: false
+
+persistence:
+  data:
+    enabled: false

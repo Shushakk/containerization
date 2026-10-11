@@ -1,0 +1,49 @@
+﻿apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: api-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: api-critical-alerts
+      rules:
+        - alert: APIHighErrorRate
+          expr: |
+            100 *
+            sum(rate(http_errors_total{job="api"}[5m]))
+            /
+            sum(rate(http_requests_total{job="api"}[5m]))
+            > 5
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "API error rate is above 5%"
+            description: "The API error rate has exceeded 5% for at least one minute. Current value: {{ $value }}%."
+
+        - alert: APIHighLatency
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (le) (
+                rate(http_request_duration_seconds_bucket{job="api", path="/slow"}[5m])
+              )
+            ) > 2
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "API latency is too high"
+            description: "The 95th percentile latency for /slow has exceeded 2 seconds. Current value: {{ $value }} seconds."
+
+        - alert: APIUnavailable
+          expr: |
+            absent(up{job="api"}) or up{job="api"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "API is unavailable"
+            description: "Prometheus cannot find a healthy API scrape target."

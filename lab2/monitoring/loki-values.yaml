@@ -1,0 +1,94 @@
+deploymentMode: Monolithic
+
+loki:
+  auth_enabled: false
+
+  commonConfig:
+    replication_factor: 1
+
+  schemaConfig:
+    configs:
+      - from: "2024-04-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+
+  storage:
+    type: filesystem
+
+  limits_config:
+    allow_structured_metadata: true
+    volume_enabled: true
+
+singleBinary:
+  replicas: 1
+
+  persistence:
+    enabled: true
+    size: 5Gi
+
+# Остальные режимы Loki нам для этой
+# одновузловой лабораторной не нужны.
+backend:
+  replicas: 0
+
+read:
+  replicas: 0
+
+write:
+  replicas: 0
+
+ingester:
+  replicas: 0
+
+querier:
+  replicas: 0
+
+queryFrontend:
+  replicas: 0
+
+queryScheduler:
+  replicas: 0
+
+distributor:
+  replicas: 0
+
+compactor:
+  replicas: 0
+
+indexGateway:
+  replicas: 0
+
+bloomPlanner:
+  replicas: 0
+
+bloomBuilder:
+  replicas: 0
+
+bloomGateway:
+  replicas: 0
+
+# Gateway оставляем — через него потом будет
+# удобно отправлять логи из Alloy.
+gateway:
+  enabled: true
+  replicas: 1
+
+# Canary здесь не нужен: наша задача —
+# проверить именно Alloy → Loki.
+lokiCanary:
+  enabled: false
+
+# Для Minikube отключим дополнительные кеши,
+# чтобы не расходовать лишние ресурсы.
+chunksCache:
+  enabled: false
+
+resultsCache:
+  enabled: false
+
+test:
+  enabled: false

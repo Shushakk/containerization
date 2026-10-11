@@ -1,0 +1,10 @@
+fullnameOverride: jaeger
+
+jaeger:
+  enabled: true
+  replicas: 1
+
+  image:
+    repository: jaegertracing/jaeger
+    tag: "2.20.0"
+    pullPolicy: IfNotPresent
