@@ -1,0 +1,24 @@
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+
+    route:
+      receiver: "null"
+      group_by:
+        - alertname
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 1h
+      routes:
+        - receiver: "api-webhook"
+          matchers:
+            - 'alertname=~"APIHighErrorRate|APIHighLatency|APIUnavailable"'
+
+    receivers:
+      - name: "null"
+
+      - name: "api-webhook"
+        webhook_configs:
+          - url: "https://webhook.site/93c6c0ee-d55a-424f-b7b3-60cbad74b45e"
+            send_resolved: true
