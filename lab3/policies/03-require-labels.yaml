@@ -1,0 +1,25 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-standard-labels
+spec:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - message: "Pods must have non-empty app.kubernetes.io/name and app.kubernetes.io/part-of labels."
+      expression: >-
+        request.userInfo.username == "system:serviceaccount:local-path-storage:local-path-provisioner-service-account" ||
+        object.metadata.namespace in ["kube-system", "kyverno", "cnpg-system", "monitoring", "local-path-storage"] ||
+        (
+          has(object.metadata.labels) &&
+          "app.kubernetes.io/name" in object.metadata.labels &&
+          object.metadata.labels["app.kubernetes.io/name"] != "" &&
+          "app.kubernetes.io/part-of" in object.metadata.labels &&
+          object.metadata.labels["app.kubernetes.io/part-of"] != ""
+        )

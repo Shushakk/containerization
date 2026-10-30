@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-hostpath
+  namespace: default
+  labels:
+    app.kubernetes.io/name: test
+    app.kubernetes.io/part-of: shop-lab3
+spec:
+  containers:
+    - name: test
+      image: shop.local/api:v1
+      volumeMounts:
+        - name: host-data
+          mountPath: /host-data
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "64Mi"
+        limits:
+          cpu: "500m"
+          memory: "128Mi"
+  volumes:
+    - name: host-data
+      hostPath:
+        path: /tmp
+        type: Directory

@@ -1,0 +1,33 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-trusted-images
+spec:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - message: "Use only images from shop.local, ghcr.io/cloudnative-pg or registry.k8s.io."
+      expression: >-
+        request.userInfo.username == "system:serviceaccount:local-path-storage:local-path-provisioner-service-account" ||
+        object.metadata.namespace in ["kube-system", "kyverno", "cnpg-system", "monitoring", "local-path-storage"] ||
+        (
+          object.spec.containers.all(c,
+            c.image.startsWith("shop.local/") ||
+            c.image.startsWith("ghcr.io/cloudnative-pg/") ||
+            c.image.startsWith("registry.k8s.io/")
+          ) &&
+          (
+            !has(object.spec.initContainers) ||
+            object.spec.initContainers.all(c,
+              c.image.startsWith("shop.local/") ||
+              c.image.startsWith("ghcr.io/cloudnative-pg/") ||
+              c.image.startsWith("registry.k8s.io/")
+            )
+          )
+        )

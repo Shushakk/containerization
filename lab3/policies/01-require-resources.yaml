@@ -1,0 +1,41 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-pod-resources
+spec:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - message: "Every container must define CPU and memory requests and limits."
+      expression: >-
+        request.userInfo.username == "system:serviceaccount:local-path-storage:local-path-provisioner-service-account" ||
+        object.metadata.namespace in ["kube-system", "kyverno", "cnpg-system", "monitoring", "local-path-storage"] ||
+        (
+          object.spec.containers.all(c,
+            has(c.resources) &&
+            has(c.resources.requests) &&
+            "cpu" in c.resources.requests &&
+            "memory" in c.resources.requests &&
+            has(c.resources.limits) &&
+            "cpu" in c.resources.limits &&
+            "memory" in c.resources.limits
+          ) &&
+          (
+            !has(object.spec.initContainers) ||
+            object.spec.initContainers.all(c,
+              has(c.resources) &&
+              has(c.resources.requests) &&
+              "cpu" in c.resources.requests &&
+              "memory" in c.resources.requests &&
+              has(c.resources.limits) &&
+              "cpu" in c.resources.limits &&
+              "memory" in c.resources.limits
+            )
+          )
+        )

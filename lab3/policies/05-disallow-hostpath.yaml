@@ -1,0 +1,20 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: disallow-hostpath
+spec:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - message: "Mounting host filesystem paths with hostPath is forbidden."
+      expression: >-
+        request.userInfo.username == "system:serviceaccount:local-path-storage:local-path-provisioner-service-account" ||
+        object.metadata.namespace in ["kube-system", "kyverno", "cnpg-system", "monitoring", "local-path-storage"] ||
+        !has(object.spec.volumes) ||
+        object.spec.volumes.all(v, !has(v.hostPath))

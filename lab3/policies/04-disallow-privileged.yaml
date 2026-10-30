@@ -1,0 +1,33 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: disallow-privileged-containers
+spec:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - message: "Privileged containers are forbidden."
+      expression: >-
+        request.userInfo.username == "system:serviceaccount:local-path-storage:local-path-provisioner-service-account" ||
+        object.metadata.namespace in ["kube-system", "kyverno", "cnpg-system", "monitoring", "local-path-storage"] ||
+        (
+          object.spec.containers.all(c,
+            !has(c.securityContext) ||
+            !has(c.securityContext.privileged) ||
+            c.securityContext.privileged == false
+          ) &&
+          (
+            !has(object.spec.initContainers) ||
+            object.spec.initContainers.all(c,
+              !has(c.securityContext) ||
+              !has(c.securityContext.privileged) ||
+              c.securityContext.privileged == false
+            )
+          )
+        )

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-no-labels
+  namespace: default
+spec:
+  containers:
+    - name: test
+      image: shop.local/api:v1
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "64Mi"
+        limits:
+          cpu: "500m"
+          memory: "128Mi"
