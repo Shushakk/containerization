@@ -1,0 +1,149 @@
+import logging
+import os
+import time
+
+import psycopg
+from psycopg.rows import dict_row
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import PlainTextResponse, Response
+from prometheus_client import Counter, Histogram, CONTENT_TYPE_LATEST, generate_latest
+from pydantic import BaseModel, ConfigDict, Field
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("shop-api")
+
+app = FastAPI(title="Shop API")
+
+HTTP_REQUESTS = Counter(
+    "shop_http_requests_total",
+    "Total HTTP requests",
+    ["method", "path", "status"],
+)
+
+HTTP_REQUEST_DURATION = Histogram(
+    "shop_http_request_duration_seconds",
+    "HTTP request duration in seconds",
+    ["method", "path"],
+)
+
+
+@app.middleware("http")
+async def observe_http(request: Request, call_next):
+    path = request.url.path
+
+    # Не учитываем сбор метрик, чтобы не создавать лишние запросы в статистике.
+    if path == "/metrics":
+        return await call_next(request)
+
+    started = time.perf_counter()
+    status_code = "500"
+
+    try:
+        response = await call_next(request)
+        status_code = str(response.status_code)
+        return response
+    finally:
+        HTTP_REQUESTS.labels(request.method, path, status_code).inc()
+        HTTP_REQUEST_DURATION.labels(request.method, path).observe(
+            time.perf_counter() - started
+        )
+
+
+@app.get("/metrics", include_in_schema=False)
+def metrics():
+    return Response(
+        content=generate_latest(),
+        media_type=CONTENT_TYPE_LATEST,
+    )
+
+
+HEALTH_FAIL = os.getenv("HEALTH_FAIL", "false").lower() in {
+    "1", "true", "yes"
+}
+
+
+def connect_db():
+    """Открывает подключение к PostgreSQL по переменным окружения."""
+    return psycopg.connect(
+        host=os.getenv("DB_HOST", "shop-db-rw"),
+        port=int(os.getenv("DB_PORT", "5432")),
+        dbname=os.getenv("DB_NAME", "shop"),
+        user=os.getenv("DB_USER", "shop"),
+        password=os.getenv("DB_PASSWORD", "shop"),
+        connect_timeout=3,
+        row_factory=dict_row,
+    )
+
+
+def ensure_schema(conn):
+    """Создаёт таблицу при первом обращении, если её ещё нет."""
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS orders (
+            id BIGSERIAL PRIMARY KEY,
+            item TEXT NOT NULL,
+            quantity INTEGER NOT NULL CHECK (quantity > 0),
+            processed BOOLEAN NOT NULL DEFAULT FALSE,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    """)
+
+
+class OrderCreate(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    item: str = Field(min_length=1, max_length=200)
+    quantity: int = Field(gt=0, le=10000)
+
+
+@app.get("/health", response_class=PlainTextResponse)
+def health():
+    if HEALTH_FAIL:
+        return PlainTextResponse(
+            content="unhealthy",
+            status_code=503,
+        )
+    return PlainTextResponse(content="ok")
+
+
+@app.post("/order")
+def create_order(order: OrderCreate):
+    try:
+        with connect_db() as conn:
+            ensure_schema(conn)
+            result = conn.execute(
+                """
+                INSERT INTO orders (item, quantity)
+                VALUES (%s, %s)
+                RETURNING id, item, quantity, processed, created_at
+                """,
+                (order.item, order.quantity),
+            ).fetchone()
+            return result
+    except psycopg.Error as exc:
+        logger.exception("Cannot create order")
+        raise HTTPException(
+            status_code=503,
+            detail="Database unavailable",
+        ) from exc
+
+
+@app.get("/orders")
+def get_orders():
+    try:
+        with connect_db() as conn:
+            ensure_schema(conn)
+            result = conn.execute(
+                """
+                SELECT id, item, quantity, processed, created_at
+                FROM orders
+                ORDER BY id DESC
+                LIMIT 100
+                """
+            ).fetchall()
+            return result
+    except psycopg.Error as exc:
+        logger.exception("Cannot read orders")
+        raise HTTPException(
+            status_code=503,
+            detail="Database unavailable",
+        ) from exc

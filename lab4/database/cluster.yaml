@@ -1,0 +1,39 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: shop-db
+  namespace: shop
+  labels:
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/part-of: shop
+spec:
+  instances: 1
+
+  imageName: ghcr.io/cloudnative-pg/postgresql:16
+  primaryUpdateStrategy: unsupervised
+
+  inheritedMetadata:
+    labels:
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/part-of: shop
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+
+  storage:
+    size: 1Gi
+
+  bootstrap:
+    initdb:
+      database: shop
+      owner: shop
+      secret:
+        name: shop-db-credentials
+
+  monitoring:
+    enablePodMonitor: false
