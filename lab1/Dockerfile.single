@@ -1,0 +1,12 @@
+FROM golang:1.22
+
+WORKDIR /src
+
+COPY go.mod ./
+COPY *.go ./
+
+RUN go build -o /usr/local/bin/api .
+
+EXPOSE 8000
+
+CMD ["/usr/local/bin/api"]

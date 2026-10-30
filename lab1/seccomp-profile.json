@@ -1,0 +1,11 @@
+{
+  "description": "Educational profile consumed by seccomp_exec.py",
+  "default_action": "allow",
+  "rules": [
+    {
+      "syscalls": ["uname"],
+      "action": "errno",
+      "errno": 1
+    }
+  ]
+}
