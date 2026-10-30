@@ -1,0 +1,58 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+rule_files:
+  - /etc/prometheus/shop-alerts.yml
+
+scrape_configs:
+  - job_name: cadvisor
+    static_configs:
+      - targets:
+          - lab-cadvisor:8080
+
+  - job_name: shop-api
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - 172.19.0.5:30080
+
+  - job_name: kube-state-metrics
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - 172.19.0.1:18080
+
+  - job_name: kubelet
+    metrics_path: /metrics/cadvisor
+    static_configs:
+      - targets:
+          - 172.19.0.1:18081
+        labels:
+          node: shop-lab4-worker
+          metrics_path: /metrics/cadvisor
+      - targets:
+          - 172.19.0.1:18081
+        labels:
+          node: shop-lab4-control-plane
+          metrics_path: /metrics/cadvisor
+    relabel_configs:
+      - source_labels: [node]
+        regex: shop-lab4-worker
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/shop-lab4-worker/proxy/metrics/cadvisor
+      - source_labels: [node]
+        regex: shop-lab4-control-plane
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/shop-lab4-control-plane/proxy/metrics/cadvisor
+
+  - job_name: hubble-metrics
+    scrape_interval: 5s
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["172.19.0.4:9965"]
+        labels:
+          node: shop-lab5-worker
+      - targets: ["172.19.0.5:9965"]
+        labels:
+          node: shop-lab5-control-plane

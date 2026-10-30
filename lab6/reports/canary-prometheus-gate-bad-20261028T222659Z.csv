@@ -1,0 +1,2 @@
+timestamp_utc,mode,canary_weight,canary_pod,client_200,client_500,canary_total,canary_failures,error_percent,p95_ms,decision
+2026-10-28T22:27:52Z,bad,10,shop-api-v2-6445dc8474-vtxx2,160,0,24.938125000000003,2.36435,9.481,9.623,FAIL

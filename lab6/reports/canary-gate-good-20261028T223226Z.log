@@ -1,0 +1,221 @@
+Режим: good
+Исходная ревизия для rollback: 29
+Порог ошибок canary: 5%
+Порог P95 TTFB: 100 ms
+Число запросов за цикл: 160
+CSV-отчёт: reports/canary-prometheus-gate-good-20261028T223226Z.csv
+
+==================================================
+Устанавливаем веса: v1=90%, v2=10%
+Canary FAIL=false
+==================================================
+Release "shop" has been upgraded. Happy Helming!
+NAME: shop
+LAST DEPLOYED: Thu Oct 29 01:32:28 2026
+NAMESPACE: shop
+STATUS: deployed
+REVISION: 30
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
+deployment "shop-api-v2" successfully rolled out
+Accepted=True Accepted
+ResolvedRefs=True ResolvedRefs
+
+Отправляем запросы из meshed pod shop-api-85f869cd57-52tlf
+{"requests": 160, "statuses": {"200": 160}, "client_200": 160, "client_500": 0, "other_errors": 0}
+
+Ожидаем сбора свежих метрик...
+
+===== GATE RESULT =====
+Canary pod: shop-api-v2-69b5f46f6c-9f9z2
+Ответы canary в Prometheus: 21.5606
+Ошибки canary в Prometheus: 0.0
+Доля ошибок canary: 0.000%
+P95 TTFB: 9.374 ms
+Решение: PASS (within_thresholds)
+Клиент: HTTP 200=160; HTTP 500=0
+GATE=PASS: canary остаётся в пределах порогов.
+
+==================================================
+Устанавливаем веса: v1=70%, v2=30%
+Canary FAIL=false
+==================================================
+Release "shop" has been upgraded. Happy Helming!
+NAME: shop
+LAST DEPLOYED: Thu Oct 29 01:33:20 2026
+NAMESPACE: shop
+STATUS: deployed
+REVISION: 31
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
+deployment "shop-api-v2" successfully rolled out
+Accepted=True Accepted
+ResolvedRefs=True ResolvedRefs
+
+Отправляем запросы из meshed pod shop-api-85f869cd57-52tlf
+{"requests": 160, "statuses": {"200": 160}, "client_200": 160, "client_500": 0, "other_errors": 0}
+
+Ожидаем сбора свежих метрик...
+
+===== GATE RESULT =====
+Canary pod: shop-api-v2-69b5f46f6c-9f9z2
+Ответы canary в Prometheus: 40.776199999999996
+Ошибки canary в Prometheus: 0.0
+Доля ошибок canary: 0.000%
+P95 TTFB: 9.804 ms
+Решение: PASS (within_thresholds)
+Клиент: HTTP 200=160; HTTP 500=0
+GATE=PASS: canary остаётся в пределах порогов.
+
+==================================================
+Устанавливаем веса: v1=50%, v2=50%
+Canary FAIL=false
+==================================================
+Release "shop" has been upgraded. Happy Helming!
+NAME: shop
+LAST DEPLOYED: Thu Oct 29 01:33:52 2026
+NAMESPACE: shop
+STATUS: deployed
+REVISION: 32
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
+deployment "shop-api-v2" successfully rolled out
+Accepted=True Accepted
+ResolvedRefs=True ResolvedRefs
+
+Отправляем запросы из meshed pod shop-api-85f869cd57-52tlf
+{"requests": 160, "statuses": {"200": 160}, "client_200": 160, "client_500": 0, "other_errors": 0}
+
+Ожидаем сбора свежих метрик...
+
+===== GATE RESULT =====
+Canary pod: shop-api-v2-69b5f46f6c-9f9z2
+Ответы canary в Prometheus: 60.9722
+Ошибки canary в Prometheus: 0.0
+Доля ошибок canary: 0.000%
+P95 TTFB: 12.394 ms
+Решение: PASS (within_thresholds)
+Клиент: HTTP 200=160; HTTP 500=0
+GATE=PASS: canary остаётся в пределах порогов.
+
+==================================================
+Устанавливаем веса: v1=25%, v2=75%
+Canary FAIL=false
+==================================================
+Release "shop" has been upgraded. Happy Helming!
+NAME: shop
+LAST DEPLOYED: Thu Oct 29 01:34:26 2026
+NAMESPACE: shop
+STATUS: deployed
+REVISION: 33
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
+deployment "shop-api-v2" successfully rolled out
+Accepted=True Accepted
+ResolvedRefs=True ResolvedRefs
+
+Отправляем запросы из meshed pod shop-api-85f869cd57-52tlf
+{"requests": 160, "statuses": {"200": 160}, "client_200": 160, "client_500": 0, "other_errors": 0}
+
+Ожидаем сбора свежих метрик...
+
+===== GATE RESULT =====
+Canary pod: shop-api-v2-69b5f46f6c-9f9z2
+Ответы canary в Prometheus: 79.82300000000001
+Ошибки canary в Prometheus: 0.0
+Доля ошибок canary: 0.000%
+P95 TTFB: 9.831 ms
+Решение: PASS (within_thresholds)
+Клиент: HTTP 200=160; HTTP 500=0
+GATE=PASS: canary остаётся в пределах порогов.
+
+==================================================
+Устанавливаем веса: v1=0%, v2=100%
+Canary FAIL=false
+==================================================
+Release "shop" has been upgraded. Happy Helming!
+NAME: shop
+LAST DEPLOYED: Thu Oct 29 01:34:57 2026
+NAMESPACE: shop
+STATUS: deployed
+REVISION: 34
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
+deployment "shop-api-v2" successfully rolled out
+Accepted=True Accepted
+ResolvedRefs=True ResolvedRefs
+
+Отправляем запросы из meshed pod shop-api-85f869cd57-52tlf
+{"requests": 160, "statuses": {"503": 160}, "client_200": 0, "client_500": 0, "other_errors": 160}
+
+Ожидаем сбора свежих метрик...
+
+===== GATE RESULT =====
+Canary pod: shop-api-v2-69b5f46f6c-9f9z2
+Ответы canary в Prometheus: 95.85500000000002
+Ошибки canary в Prometheus: 0.0
+Доля ошибок canary: 0.000%
+P95 TTFB: 9.901 ms
+Решение: PASS (within_thresholds)
+Клиент: HTTP 200=0; HTTP 500=0
+GATE=PASS: canary остаётся в пределах порогов.
+
+RESULT=GOOD_RELEASE_AT_100_PERCENT
+apiVersion: policy.linkerd.io/v1beta3
+kind: HTTPRoute
+metadata:
+  annotations:
+    meta.helm.sh/release-name: shop
+    meta.helm.sh/release-namespace: shop
+  creationTimestamp: "2026-10-28T22:32:30Z"
+  generation: 5
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: shop-api-canary
+  namespace: shop
+  resourceVersion: "146237"
+  uid: ca82c342-f49e-4444-8686-58c9c371d180
+spec:
+  parentRefs:
+  - group: core
+    kind: Service
+    name: shop-api
+    port: 8000
+  rules:
+  - backendRefs:
+    - group: ""
+      kind: Service
+      name: shop-api
+      port: 8000
+      weight: 0
+    - group: ""
+      kind: Service
+      name: shop-api-v2
+      port: 8000
+      weight: 100
+    matches:
+    - path:
+        type: PathPrefix
+        value: /
+status:
+  parents:
+  - conditions:
+    - lastTransitionTime: "2026-10-28T22:32:30Z"
+      message: ""
+      reason: Accepted
+      status: "True"
+      type: Accepted
+    - lastTransitionTime: "2026-10-28T22:32:30Z"
+      message: ""
+      reason: ResolvedRefs
+      status: "True"
+      type: ResolvedRefs
+    controllerName: linkerd.io/policy-controller
+    parentRef:
+      group: core
+      kind: Service
+      name: shop-api
+      namespace: shop
+      port: 8000
+
+CSV: reports/canary-prometheus-gate-good-20261028T223226Z.csv

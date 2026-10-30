@@ -1,0 +1,51 @@
+{
+  "lab": "Lab 6 — Автопилот релиза",
+  "cluster": "kind-shop-lab5",
+  "timestamp": "2026-10-28",
+  "canary": {
+    "stable_version": "v1",
+    "canary_version": "v2",
+    "stable_weight_percent": 90,
+    "canary_weight_percent": 10,
+    "traffic_distribution_test": {
+      "requests": 500,
+      "v1_responses": 446,
+      "v2_responses": 54,
+      "http_errors": 0,
+      "observed_v2_share_percent": 10.8
+    },
+    "failure_test": {
+      "direct_v2_probe_http_status": 500,
+      "requests": 200,
+      "concurrency": 4,
+      "http_200": 176,
+      "http_500": 24,
+      "errors": 24,
+      "error_rate_percent": 12.0,
+      "allowed_error_rate_percent": 5.0,
+      "gate_decision": "FAILED",
+      "rollback_triggered": true
+    }
+  },
+  "rollback": {
+    "target_revision": 15,
+    "resulting_revision": 18,
+    "status": "success",
+    "api_health": "ok",
+    "api_version_after_rollback": "v1",
+    "api_replicas_ready": 3,
+    "worker_replicas_ready": 2,
+    "postgres_ready_instances": 1,
+    "kubernetes_nodes_ready": 2,
+    "canary_deployment_removed": true,
+    "canary_service_removed": true,
+    "canary_httproute_removed": true
+  },
+  "linkerd": {
+    "control_plane_check": "passed",
+    "viz_check": "passed",
+    "api_mesh_status_before_canary": "3/3",
+    "api_success_rate_before_canary_percent": 100.0,
+    "final_version_check_note": "Version-check request timed out; CLI and control plane versions match."
+  }
+}

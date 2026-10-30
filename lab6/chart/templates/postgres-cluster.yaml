@@ -1,0 +1,37 @@
+{{- if .Values.postgres.enabled }}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ .Values.postgres.clusterName }}
+  labels:
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/part-of: shop
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  instances: {{ .Values.postgres.instances }}
+  imageName: {{ .Values.postgres.imageName | quote }}
+  priorityClassName: {{ .Values.postgres.priorityClassName | quote }}
+  primaryUpdateStrategy: unsupervised
+
+  inheritedMetadata:
+    labels:
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/part-of: shop
+
+  resources:
+    {{- toYaml .Values.postgres.resources | nindent 4 }}
+
+  storage:
+    size: {{ .Values.postgres.storageSize | quote }}
+
+  bootstrap:
+    initdb:
+      database: {{ .Values.postgres.database | quote }}
+      owner: {{ .Values.postgres.username | quote }}
+      secret:
+        name: {{ .Values.postgres.secretName }}
+
+  monitoring:
+    enablePodMonitor: false
+{{- end }}

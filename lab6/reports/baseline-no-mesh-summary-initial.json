@@ -1,0 +1,21 @@
+{
+  "timestamp_utc": "2026-10-28T16:45:39.960024+00:00",
+  "phase": "baseline_without_mesh",
+  "base_url": "http://127.0.0.1:30080",
+  "version": "v1",
+  "requests": 120,
+  "concurrency": 4,
+  "successful_requests": 120,
+  "errors": 0,
+  "error_rate_percent": 0.0,
+  "status_counts": {
+    "200": 120
+  },
+  "latency_ms": {
+    "min": 40.243,
+    "mean": 193.105,
+    "p50": 199.16,
+    "p95": 307.645,
+    "max": 370.153
+  }
+}

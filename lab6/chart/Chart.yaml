@@ -1,0 +1,6 @@
+apiVersion: v2
+name: shop
+description: Local shop platform with API, worker and CloudNativePG
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

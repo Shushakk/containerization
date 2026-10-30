@@ -1,0 +1,30 @@
+{
+  "phase": "baseline_without_mesh",
+  "requests": 120,
+  "concurrency": 4,
+  "measurement_window_seconds": 6.313,
+  "api_cpu_seconds_total": 2.825646,
+  "average_api_cpu_cores": 0.447592,
+  "average_api_cpu_millicores": 447.592,
+  "memory_current_total_after_mib": 134.086,
+  "pods": {
+    "shop-api-68d985f886-4kzwd": {
+      "cpu_seconds_during_test": 1.210125,
+      "memory_before_mib": 45.148,
+      "memory_after_mib": 45.297,
+      "memory_peak_since_pod_start_mib": 49.91
+    },
+    "shop-api-68d985f886-w44wb": {
+      "cpu_seconds_during_test": 1.523874,
+      "memory_before_mib": 44.961,
+      "memory_after_mib": 45.504,
+      "memory_peak_since_pod_start_mib": 49.402
+    },
+    "shop-api-68d985f886-wxrq9": {
+      "cpu_seconds_during_test": 0.091647,
+      "memory_before_mib": 43.371,
+      "memory_after_mib": 43.285,
+      "memory_peak_since_pod_start_mib": 47.734
+    }
+  }
+}

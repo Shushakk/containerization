@@ -1,0 +1,42 @@
+groups:
+  - name: shop-api-alerts
+    interval: 15s
+    rules:
+      - alert: ShopAPIDown
+        expr: up{job="shop-api"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Shop API недоступен"
+          description: "Prometheus не может получить метрики Shop API."
+
+      - alert: ShopAPI5xxErrors
+        expr: sum(rate(shop_http_requests_total{job="shop-api",status=~"5.."}[1m])) > 0
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Shop API возвращает HTTP 5xx"
+          description: "За последнюю минуту наблюдаются ответы API с кодами 5xx."
+
+      - alert: ShopAPIHighLatency
+        expr: histogram_quantile(0.95, sum by (le) (rate(shop_http_request_duration_seconds_bucket{job="shop-api"}[5m]))) > 0.5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокая задержка Shop API"
+          description: "95-й перцентиль времени ответа API превышает 0.5 секунды."
+
+  - name: hubble-network-alerts
+    interval: 15s
+    rules:
+      - alert: HubbleDropObserved
+        expr: increase(hubble_drop_total{job="hubble-metrics",reason="POLICY_DENIED",protocol="TCP"}[1m]) > 0
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Cilium заблокировал TCP-соединение"
+          description: "Hubble зарегистрировал блокировку TCP сетевой политикой за последнюю минуту."

@@ -1,0 +1,7 @@
+timestamp_utc,component,pod,action,api_ready,worker_ready,detail
+2026-10-26T18:15:43Z,api,shop-api-7998c95449-bnqmg,DELETE_REQUESTED,3,2,grace_25s
+2026-10-26T18:16:10Z,api,shop-api-7998c95449-gnf4n,DELETE_REQUESTED,3,2,grace_25s
+2026-10-26T18:16:42Z,api,shop-api-7998c95449-c8mg9,DELETE_REQUESTED,3,2,grace_25s
+2026-10-26T18:17:08Z,worker,shop-worker-784d657976-qz4f6,DELETE_REQUESTED,3,2,grace_10s
+2026-10-26T18:17:32Z,worker,shop-worker-784d657976-dhmxq,DELETE_REQUESTED,3,2,grace_10s
+2026-10-26T18:17:53Z,worker,shop-worker-784d657976-ffnbz,DELETE_REQUESTED,3,2,grace_10s
