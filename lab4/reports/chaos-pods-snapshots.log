@@ -1,0 +1,126 @@
+
+===== 2026-10-26T21:15:41+03:00 =====
+NAME                           READY   STATUS    RESTARTS   AGE    IP             NODE                      NOMINATED NODE   READINESS GATES
+shop-api-7998c95449-568qc      1/1     Running   0          103s   10.245.0.66    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-bnqmg      1/1     Running   0          172m   10.245.0.10    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-gnf4n      1/1     Running   0          4h     10.245.1.231   shop-lab5-worker          <none>           <none>
+shop-chaos-client              1/1     Running   0          42m    10.245.1.109   shop-lab5-worker          <none>           <none>
+shop-db-1                      1/1     Running   0          4h     10.245.1.61    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-ffnbz   1/1     Running   0          172m   10.245.1.39    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-qz4f6   1/1     Running   0          72s    10.245.1.232   shop-lab5-worker          <none>           <none>
+
+===== 2026-10-26T21:15:43+03:00 =====
+NAME                           READY   STATUS        RESTARTS   AGE    IP             NODE                      NOMINATED NODE   READINESS GATES
+shop-api-7998c95449-568qc      1/1     Running       0          105s   10.245.0.66    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-bnqmg      1/1     Terminating   0          172m   10.245.0.10    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-gnf4n      1/1     Running       0          4h     10.245.1.231   shop-lab5-worker          <none>           <none>
+shop-api-7998c95449-hgb8b      0/1     Pending       0          0s     <none>         shop-lab5-control-plane   <none>           <none>
+shop-chaos-client              1/1     Running       0          42m    10.245.1.109   shop-lab5-worker          <none>           <none>
+shop-db-1                      1/1     Running       0          4h     10.245.1.61    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-ffnbz   1/1     Running       0          172m   10.245.1.39    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-qz4f6   1/1     Running       0          74s    10.245.1.232   shop-lab5-worker          <none>           <none>
+
+===== 2026-10-26T21:16:08+03:00 =====
+NAME                           READY   STATUS    RESTARTS   AGE     IP             NODE                      NOMINATED NODE   READINESS GATES
+shop-api-7998c95449-568qc      1/1     Running   0          2m10s   10.245.0.66    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-gnf4n      1/1     Running   0          4h1m    10.245.1.231   shop-lab5-worker          <none>           <none>
+shop-api-7998c95449-hgb8b      1/1     Running   0          25s     10.245.0.20    shop-lab5-control-plane   <none>           <none>
+shop-chaos-client              1/1     Running   0          42m     10.245.1.109   shop-lab5-worker          <none>           <none>
+shop-db-1                      1/1     Running   0          4h      10.245.1.61    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-ffnbz   1/1     Running   0          172m    10.245.1.39    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-qz4f6   1/1     Running   0          99s     10.245.1.232   shop-lab5-worker          <none>           <none>
+
+===== 2026-10-26T21:16:10+03:00 =====
+NAME                           READY   STATUS        RESTARTS   AGE     IP             NODE                      NOMINATED NODE   READINESS GATES
+shop-api-7998c95449-568qc      1/1     Running       0          2m12s   10.245.0.66    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-c8mg9      0/1     Pending       0          0s      <none>         shop-lab5-worker          <none>           <none>
+shop-api-7998c95449-gnf4n      1/1     Terminating   0          4h1m    10.245.1.231   shop-lab5-worker          <none>           <none>
+shop-api-7998c95449-hgb8b      1/1     Running       0          27s     10.245.0.20    shop-lab5-control-plane   <none>           <none>
+shop-chaos-client              1/1     Running       0          42m     10.245.1.109   shop-lab5-worker          <none>           <none>
+shop-db-1                      1/1     Running       0          4h      10.245.1.61    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-ffnbz   1/1     Running       0          172m    10.245.1.39    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-qz4f6   1/1     Running       0          101s    10.245.1.232   shop-lab5-worker          <none>           <none>
+
+===== 2026-10-26T21:16:40+03:00 =====
+NAME                           READY   STATUS    RESTARTS   AGE     IP             NODE                      NOMINATED NODE   READINESS GATES
+shop-api-7998c95449-568qc      1/1     Running   0          2m42s   10.245.0.66    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-c8mg9      1/1     Running   0          30s     10.245.1.132   shop-lab5-worker          <none>           <none>
+shop-api-7998c95449-hgb8b      1/1     Running   0          57s     10.245.0.20    shop-lab5-control-plane   <none>           <none>
+shop-chaos-client              1/1     Running   0          43m     10.245.1.109   shop-lab5-worker          <none>           <none>
+shop-db-1                      1/1     Running   0          4h1m    10.245.1.61    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-ffnbz   1/1     Running   0          173m    10.245.1.39    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-qz4f6   1/1     Running   0          2m11s   10.245.1.232   shop-lab5-worker          <none>           <none>
+
+===== 2026-10-26T21:16:42+03:00 =====
+NAME                           READY   STATUS        RESTARTS   AGE     IP             NODE                      NOMINATED NODE   READINESS GATES
+shop-api-7998c95449-568qc      1/1     Running       0          2m44s   10.245.0.66    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-69swd      0/1     Pending       0          0s      <none>         shop-lab5-worker          <none>           <none>
+shop-api-7998c95449-c8mg9      1/1     Terminating   0          32s     10.245.1.132   shop-lab5-worker          <none>           <none>
+shop-api-7998c95449-hgb8b      1/1     Running       0          59s     10.245.0.20    shop-lab5-control-plane   <none>           <none>
+shop-chaos-client              1/1     Running       0          43m     10.245.1.109   shop-lab5-worker          <none>           <none>
+shop-db-1                      1/1     Running       0          4h1m    10.245.1.61    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-ffnbz   1/1     Running       0          173m    10.245.1.39    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-qz4f6   1/1     Running       0          2m13s   10.245.1.232   shop-lab5-worker          <none>           <none>
+
+===== 2026-10-26T21:17:07+03:00 =====
+NAME                           READY   STATUS    RESTARTS   AGE     IP             NODE                      NOMINATED NODE   READINESS GATES
+shop-api-7998c95449-568qc      1/1     Running   0          3m9s    10.245.0.66    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-69swd      1/1     Running   0          25s     10.245.1.246   shop-lab5-worker          <none>           <none>
+shop-api-7998c95449-hgb8b      1/1     Running   0          84s     10.245.0.20    shop-lab5-control-plane   <none>           <none>
+shop-chaos-client              1/1     Running   0          43m     10.245.1.109   shop-lab5-worker          <none>           <none>
+shop-db-1                      1/1     Running   0          4h1m    10.245.1.61    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-ffnbz   1/1     Running   0          173m    10.245.1.39    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-qz4f6   1/1     Running   0          2m38s   10.245.1.232   shop-lab5-worker          <none>           <none>
+
+===== 2026-10-26T21:17:08+03:00 =====
+NAME                           READY   STATUS        RESTARTS   AGE     IP             NODE                      NOMINATED NODE   READINESS GATES
+shop-api-7998c95449-568qc      1/1     Running       0          3m11s   10.245.0.66    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-69swd      1/1     Running       0          27s     10.245.1.246   shop-lab5-worker          <none>           <none>
+shop-api-7998c95449-hgb8b      1/1     Running       0          86s     10.245.0.20    shop-lab5-control-plane   <none>           <none>
+shop-chaos-client              1/1     Running       0          43m     10.245.1.109   shop-lab5-worker          <none>           <none>
+shop-db-1                      1/1     Running       0          4h1m    10.245.1.61    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-dhmxq   0/1     Pending       0          1s      <none>         shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-ffnbz   1/1     Running       0          173m    10.245.1.39    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-qz4f6   1/1     Terminating   0          2m40s   10.245.1.232   shop-lab5-worker          <none>           <none>
+
+===== 2026-10-26T21:17:29+03:00 =====
+NAME                           READY   STATUS    RESTARTS   AGE     IP             NODE                      NOMINATED NODE   READINESS GATES
+shop-api-7998c95449-568qc      1/1     Running   0          3m32s   10.245.0.66    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-69swd      1/1     Running   0          48s     10.245.1.246   shop-lab5-worker          <none>           <none>
+shop-api-7998c95449-hgb8b      1/1     Running   0          107s    10.245.0.20    shop-lab5-control-plane   <none>           <none>
+shop-chaos-client              1/1     Running   0          44m     10.245.1.109   shop-lab5-worker          <none>           <none>
+shop-db-1                      1/1     Running   0          4h2m    10.245.1.61    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-dhmxq   1/1     Running   0          22s     10.245.1.132   shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-ffnbz   1/1     Running   0          174m    10.245.1.39    shop-lab5-worker          <none>           <none>
+
+===== 2026-10-26T21:17:32+03:00 =====
+NAME                           READY   STATUS        RESTARTS   AGE     IP             NODE                      NOMINATED NODE   READINESS GATES
+shop-api-7998c95449-568qc      1/1     Running       0          3m34s   10.245.0.66    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-69swd      1/1     Running       0          50s     10.245.1.246   shop-lab5-worker          <none>           <none>
+shop-api-7998c95449-hgb8b      1/1     Running       0          109s    10.245.0.20    shop-lab5-control-plane   <none>           <none>
+shop-chaos-client              1/1     Running       0          44m     10.245.1.109   shop-lab5-worker          <none>           <none>
+shop-db-1                      1/1     Running       0          4h2m    10.245.1.61    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-dhmxq   1/1     Terminating   0          24s     10.245.1.132   shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-ffnbz   1/1     Running       0          174m    10.245.1.39    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-v8849   0/1     Pending       0          0s      <none>         shop-lab5-worker          <none>           <none>
+
+===== 2026-10-26T21:17:51+03:00 =====
+NAME                           READY   STATUS    RESTARTS   AGE     IP             NODE                      NOMINATED NODE   READINESS GATES
+shop-api-7998c95449-568qc      1/1     Running   0          3m53s   10.245.0.66    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-69swd      1/1     Running   0          69s     10.245.1.246   shop-lab5-worker          <none>           <none>
+shop-api-7998c95449-hgb8b      1/1     Running   0          2m8s    10.245.0.20    shop-lab5-control-plane   <none>           <none>
+shop-chaos-client              1/1     Running   0          44m     10.245.1.109   shop-lab5-worker          <none>           <none>
+shop-db-1                      1/1     Running   0          4h2m    10.245.1.61    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-ffnbz   1/1     Running   0          174m    10.245.1.39    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-v8849   1/1     Running   0          19s     10.245.1.27    shop-lab5-worker          <none>           <none>
+
+===== 2026-10-26T21:17:53+03:00 =====
+NAME                           READY   STATUS        RESTARTS   AGE     IP             NODE                      NOMINATED NODE   READINESS GATES
+shop-api-7998c95449-568qc      1/1     Running       0          3m55s   10.245.0.66    shop-lab5-control-plane   <none>           <none>
+shop-api-7998c95449-69swd      1/1     Running       0          71s     10.245.1.246   shop-lab5-worker          <none>           <none>
+shop-api-7998c95449-hgb8b      1/1     Running       0          2m10s   10.245.0.20    shop-lab5-control-plane   <none>           <none>
+shop-chaos-client              1/1     Running       0          44m     10.245.1.109   shop-lab5-worker          <none>           <none>
+shop-db-1                      1/1     Running       0          4h2m    10.245.1.61    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-58x4g   0/1     Pending       0          0s      <none>         shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-ffnbz   1/1     Terminating   0          174m    10.245.1.39    shop-lab5-worker          <none>           <none>
+shop-worker-784d657976-v8849   1/1     Running       0          21s     10.245.1.27    shop-lab5-worker          <none>           <none>

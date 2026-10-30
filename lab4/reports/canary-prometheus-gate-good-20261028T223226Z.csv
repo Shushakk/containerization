@@ -1,0 +1,6 @@
+timestamp_utc,mode,canary_weight,canary_pod,client_200,client_500,canary_total,canary_failures,error_percent,p95_ms,decision
+2026-10-28T22:33:20Z,good,10,shop-api-v2-69b5f46f6c-9f9z2,160,0,21.5606,0.0,0.000,9.374,PASS
+2026-10-28T22:33:52Z,good,30,shop-api-v2-69b5f46f6c-9f9z2,160,0,40.776199999999996,0.0,0.000,9.804,PASS
+2026-10-28T22:34:25Z,good,50,shop-api-v2-69b5f46f6c-9f9z2,160,0,60.9722,0.0,0.000,12.394,PASS
+2026-10-28T22:34:57Z,good,75,shop-api-v2-69b5f46f6c-9f9z2,160,0,79.82300000000001,0.0,0.000,9.831,PASS
+2026-10-28T22:35:23Z,good,100,shop-api-v2-69b5f46f6c-9f9z2,0,0,95.85500000000002,0.0,0.000,9.901,PASS

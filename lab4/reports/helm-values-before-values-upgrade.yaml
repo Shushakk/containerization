@@ -1,0 +1,42 @@
+api:
+  replicaCount: 3
+  resources:
+    limits:
+      cpu: 300m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  service:
+    externalTrafficPolicy: Local
+    nodePort: 30080
+    port: 8000
+    type: NodePort
+batch:
+  replicaCount: 0
+monitoring:
+  prometheusRule:
+    enabled: false
+  serviceMonitor:
+    enabled: false
+networkPolicy:
+  enabled: true
+  faultMode: none
+  nodeSubnet: 172.19.0.0/16
+postgres:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 768Mi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+worker:
+  replicaCount: 2
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
