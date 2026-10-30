@@ -1,0 +1,53 @@
+{{- if .Values.canary.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-canary-client
+  labels:
+    app.kubernetes.io/name: client
+    app.kubernetes.io/part-of: shop
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: client
+      app.kubernetes.io/part-of: shop
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: client
+        app.kubernetes.io/part-of: shop
+        app.kubernetes.io/instance: {{ .Release.Name }}
+      annotations:
+        linkerd.io/inject: enabled
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: client
+          image: "{{ .Values.canary.clientImage.repository }}:{{ .Values.canary.clientImage.tag }}"
+          imagePullPolicy: {{ .Values.canary.clientImage.pullPolicy }}
+          command:
+            - python
+            - -c
+            - "import time; time.sleep(86400)"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+{{- end }}

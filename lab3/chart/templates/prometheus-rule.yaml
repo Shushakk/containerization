@@ -1,0 +1,44 @@
+{{- if .Values.monitoring.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    prometheus: shop
+    app.kubernetes.io/name: {{ .Release.Name }}-alerts
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- with .Values.monitoring.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    - name: {{ .Release.Name }}-api-alerts
+      rules:
+        - alert: ShopAPIDown
+          expr: up{namespace="{{ .Release.Namespace }}",service=~"{{ .Release.Name }}-api(-v2)?"} == 0
+          for: 15s
+          labels:
+            severity: critical
+          annotations:
+            summary: "Shop API is unavailable"
+            description: "Prometheus cannot scrape the Shop API."
+
+        - alert: ShopAPI5xxErrors
+          expr: sum(rate(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service=~"{{ .Release.Name }}-api(-v2)?",status=~"5.."}[1m])) > 0
+          for: 15s
+          labels:
+            severity: warning
+          annotations:
+            summary: "Shop API returns HTTP 5xx errors"
+            description: "The rate of server errors is above zero."
+
+        - alert: ShopAPIHighLatency
+          expr: histogram_quantile(0.95, sum by (le) (rate(shop_http_request_duration_seconds_bucket{namespace="{{ .Release.Namespace }}",service=~"{{ .Release.Name }}-api(-v2)?"}[5m]))) > 0.5
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Shop API response time is high"
+            description: "The 95th percentile of response time exceeds 0.5 seconds."
+{{- end }}

@@ -1,0 +1,459 @@
+{{- if .Values.networkPolicy.enabled }}
+
+# 1. По умолчанию запрещаем входящие соединения ко всем Pod
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-default-deny-ingress
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+---
+# 2. Изолируем исходящие подключения API, Worker и клиента
+# Разрешения для конкретных назначений определены ниже.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-app-default-deny-egress
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/instance
+        operator: In
+        values:
+          - {{ .Release.Name }}
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - api
+          - api-v2
+          - worker
+          - client
+      - key: app.kubernetes.io/part-of
+        operator: In
+        values:
+          - shop
+  policyTypes:
+    - Egress
+
+---
+# 3. Разрешаем этим компонентам обращаться к CoreDNS по UDP/TCP 53
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-app-allow-dns
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/instance
+        operator: In
+        values:
+          - {{ .Release.Name }}
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - api
+          - api-v2
+          - worker
+          - client
+      - key: app.kubernetes.io/part-of
+        operator: In
+        values:
+          - shop
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.selectors.dnsNamespace }}
+          podSelector:
+            matchLabels:
+              {{ .Values.networkPolicy.selectors.dnsLabelKey }}: {{ if eq (.Values.networkPolicy.faultMode | default "none") "block-dns" }}kube-dns-broken{{ else }}{{ .Values.networkPolicy.selectors.dnsLabelValue }}{{ end }}
+      ports:
+        - protocol: UDP
+          port: {{ .Values.networkPolicy.ports.dns }}
+        - protocol: TCP
+          port: {{ .Values.networkPolicy.ports.dns }}
+
+---
+# 4. Клиент может обращаться к API по TCP 8000
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-client-to-api
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: client
+      app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/name: api
+              app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+      ports:
+        - protocol: TCP
+          port: {{ if eq (.Values.networkPolicy.faultMode | default "none") "wrong-client-api-port" }}{{ add .Values.networkPolicy.ports.api 1 }}{{ else }}{{ .Values.networkPolicy.ports.api }}{{ end }}
+
+---
+# 5. API может обращаться к PostgreSQL по TCP 5432
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-api-to-db
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: api
+      app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Values.networkPolicy.selectors.postgresInstance }}
+              app.kubernetes.io/name: {{ .Values.networkPolicy.selectors.postgresName }}
+              app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+      ports:
+        - protocol: TCP
+          port: {{ if eq (.Values.networkPolicy.faultMode | default "none") "wrong-api-db-port" }}{{ add .Values.networkPolicy.ports.postgres 1 }}{{ else }}{{ .Values.networkPolicy.ports.postgres }}{{ end }}
+
+---
+# 6. Worker может обращаться к PostgreSQL по TCP 5432
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-worker-to-db
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: worker
+      app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Values.networkPolicy.selectors.postgresInstance }}
+              app.kubernetes.io/name: {{ if eq (.Values.networkPolicy.faultMode | default "none") "wrong-worker-db-label" }}postgresqll{{ else }}{{ .Values.networkPolicy.selectors.postgresName }}{{ end }}
+              app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.networkPolicy.ports.postgres }}
+
+---
+# 7. API принимает соединения от клиентского Pod по TCP 8000
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-api-ingress
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: api
+      app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/name: client
+              app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.networkPolicy.ports.api }}
+
+---
+# 8. PostgreSQL принимает подключения приложения на TCP 5432.
+# Порт метрик разрешён только Pod оператора CloudNativePG.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-db-ingress
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Values.networkPolicy.selectors.postgresInstance }}
+      app.kubernetes.io/name: {{ .Values.networkPolicy.selectors.postgresName }}
+      app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/name: api
+              app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.networkPolicy.ports.postgres }}
+
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/name: worker
+              app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.networkPolicy.ports.postgres }}
+
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.selectors.cnpgNamespace }}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ .Values.networkPolicy.selectors.cnpgOperatorName }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.networkPolicy.ports.cnpgMetrics }}
+
+
+{{ if .Values.api.linkerd.enabled }}
+---
+# 9. Разрешаем API обращаться к необходимым сервисам control plane Linkerd.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-api-to-linkerd-control-plane
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - api
+          - api-v2
+          - client
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: linkerd
+          podSelector:
+            matchLabels:
+              linkerd.io/control-plane-ns: linkerd
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8086
+        - protocol: TCP
+          port: 8090
+
+---
+# 10. Разрешаем входящий трафик через Linkerd proxy и сбор метрик Viz.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-api-linkerd-ingress
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - api
+          - api-v2
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: {{ .Values.networkPolicy.nodeSubnet | quote }}
+      ports:
+        - protocol: TCP
+          port: 4143
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/name: client
+              app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+      ports:
+        - protocol: TCP
+          port: 4143
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: linkerd-viz
+      ports:
+        - protocol: TCP
+          port: 4191
+{{ end }}
+
+
+{{- if .Values.canary.enabled }}
+---
+# API v2 может обращаться к PostgreSQL по TCP/5432.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-api-v2-to-db
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: api-v2
+      app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Values.networkPolicy.selectors.postgresInstance }}
+              app.kubernetes.io/name: {{ .Values.networkPolicy.selectors.postgresName }}
+              app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.networkPolicy.ports.postgres }}
+
+---
+# PostgreSQL принимает подключения от API v2 по TCP/5432.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-db-from-api-v2
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Values.networkPolicy.selectors.postgresInstance }}
+      app.kubernetes.io/name: {{ .Values.networkPolicy.selectors.postgresName }}
+      app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/name: api-v2
+              app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.networkPolicy.ports.postgres }}
+
+---
+# Meshed-клиент может обращаться к proxy обеих версий API.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-client-to-api-proxy
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: client
+      app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - api
+                  - api-v2
+      ports:
+        - protocol: TCP
+          port: 4143
+{{- end }}
+
+
+{{- if and .Values.api.linkerd.enabled .Values.api.retries.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-api-to-api-proxy-egress
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: api
+      app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/name: api
+              app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+      ports:
+        - protocol: TCP
+          port: 4143
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-api-api-proxy-ingress
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: api
+      app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/name: api
+              app.kubernetes.io/part-of: {{ .Values.networkPolicy.selectors.appPartOf }}
+      ports:
+        - protocol: TCP
+          port: 4143
+{{- end }}
+
+{{- end }}
