@@ -1,0 +1,1 @@
+timestamp_utc,mode,canary_weight,canary_pod,client_200,client_500,canary_total,canary_failures,error_percent,p95_ms,decision

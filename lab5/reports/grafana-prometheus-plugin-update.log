@@ -1,0 +1,4 @@
+Flag --atomic has been deprecated, use --rollback-on-failure instead
+level=WARN msg="upgrade failed" name=monitoring error="resource Deployment/monitoring/monitoring-grafana not ready. status: InProgress, message: Pending termination: 1\ncontext deadline exceeded"
+Error: UPGRADE FAILED: release monitoring failed, and has been rolled back due to rollback-on-failure being set: resource Deployment/monitoring/monitoring-grafana not ready. status: InProgress, message: Pending termination: 1
+context deadline exceeded

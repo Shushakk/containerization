@@ -1,0 +1,29 @@
+{{- if .Values.priorityClasses.create }}
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: {{ .Values.priorityClasses.critical.name }}
+  labels:
+    app.kubernetes.io/name: priority-class
+    app.kubernetes.io/part-of: shop
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+value: {{ .Values.priorityClasses.critical.value }}
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: "High priority for the SLA-critical shop API and PostgreSQL."
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: {{ .Values.priorityClasses.batch.name }}
+  labels:
+    app.kubernetes.io/name: priority-class
+    app.kubernetes.io/part-of: shop
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+value: {{ .Values.priorityClasses.batch.value }}
+globalDefault: false
+preemptionPolicy: Never
+description: "Low priority for the background batch workload."
+{{- end }}

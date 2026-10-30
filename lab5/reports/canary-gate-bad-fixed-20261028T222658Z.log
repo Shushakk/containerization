@@ -1,0 +1,42 @@
+Режим: bad
+Исходная ревизия для rollback: 27
+Порог ошибок canary: 5%
+Порог P95 TTFB: 100 ms
+Число запросов за цикл: 160
+CSV-отчёт: reports/canary-prometheus-gate-bad-20261028T222659Z.csv
+
+==================================================
+Устанавливаем веса: v1=90%, v2=10%
+Canary FAIL=true
+==================================================
+Release "shop" has been upgraded. Happy Helming!
+NAME: shop
+LAST DEPLOYED: Thu Oct 29 01:27:00 2026
+NAMESPACE: shop
+STATUS: deployed
+REVISION: 28
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
+deployment "shop-api-v2" successfully rolled out
+Accepted=True Accepted
+ResolvedRefs=True ResolvedRefs
+
+Отправляем запросы из meshed pod shop-api-85f869cd57-52tlf
+{"requests": 160, "statuses": {"200": 160}, "client_200": 160, "client_500": 0, "other_errors": 0}
+
+Ожидаем сбора свежих метрик...
+
+===== GATE RESULT =====
+Canary pod: shop-api-v2-6445dc8474-vtxx2
+Ответы canary в Prometheus: 24.938125000000003
+Ошибки canary в Prometheus: 2.36435
+Доля ошибок canary: 9.481%
+P95 TTFB: 9.623 ms
+Решение: FAIL (threshold_exceeded)
+Клиент: HTTP 200=160; HTTP 500=0
+
+===== GATE=REJECT: плохая версия обнаружена; автоматический rollback =====
+Откатываем Helm на исходную ревизию: 27
+Rollback was a success! Happy Helming!
+deployment "shop-api" successfully rolled out
+Rollback completed.

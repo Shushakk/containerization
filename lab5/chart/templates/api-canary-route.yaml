@@ -1,0 +1,21 @@
+{{- if .Values.canary.enabled }}
+apiVersion: policy.linkerd.io/v1beta2
+kind: HTTPRoute
+metadata:
+  name: {{ .Release.Name }}-api-canary
+  namespace: {{ .Release.Namespace }}
+spec:
+  parentRefs:
+    - name: {{ .Release.Name }}-api
+      kind: Service
+      group: core
+      port: {{ .Values.api.service.port }}
+  rules:
+    - backendRefs:
+        - name: {{ .Release.Name }}-api
+          port: {{ .Values.api.service.port }}
+          weight: {{ .Values.canary.stableWeight }}
+        - name: {{ .Release.Name }}-api-v2
+          port: {{ .Values.api.service.port }}
+          weight: {{ .Values.canary.canaryWeight }}
+{{- end }}

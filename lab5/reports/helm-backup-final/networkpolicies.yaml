@@ -1,0 +1,234 @@
+{{- if .Values.networkPolicy.enabled }}
+
+# 1. По умолчанию запрещаем входящие соединения ко всем Pod
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-default-deny-ingress
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+---
+# 2. Изолируем исходящие подключения API, Worker и клиента
+# Разрешения для конкретных назначений определены ниже.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-app-default-deny-egress
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/instance
+        operator: In
+        values:
+          - {{ .Release.Name }}
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - api
+          - worker
+          - client
+      - key: app.kubernetes.io/part-of
+        operator: In
+        values:
+          - shop
+  policyTypes:
+    - Egress
+
+---
+# 3. Разрешаем этим компонентам обращаться к CoreDNS по UDP/TCP 53
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-app-allow-dns
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/instance
+        operator: In
+        values:
+          - {{ .Release.Name }}
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - api
+          - worker
+          - client
+      - key: app.kubernetes.io/part-of
+        operator: In
+        values:
+          - shop
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: {{ if eq (.Values.networkPolicy.faultMode | default "none") "block-dns" }}kube-dns-broken{{ else }}kube-dns{{ end }}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# 4. Клиент может обращаться к API по TCP 8000
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-client-to-api
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: client
+      app.kubernetes.io/part-of: shop
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/name: api
+              app.kubernetes.io/part-of: shop
+      ports:
+        - protocol: TCP
+          port: {{ if eq (.Values.networkPolicy.faultMode | default "none") "wrong-client-api-port" }}8001{{ else }}8000{{ end }}
+
+---
+# 5. API может обращаться к PostgreSQL по TCP 5432
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-api-to-db
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: api
+      app.kubernetes.io/part-of: shop
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: shop-db
+              app.kubernetes.io/name: postgresql
+              app.kubernetes.io/part-of: shop
+      ports:
+        - protocol: TCP
+          port: {{ if eq (.Values.networkPolicy.faultMode | default "none") "wrong-api-db-port" }}5433{{ else }}5432{{ end }}
+
+---
+# 6. Worker может обращаться к PostgreSQL по TCP 5432
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-worker-to-db
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: worker
+      app.kubernetes.io/part-of: shop
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: shop-db
+              app.kubernetes.io/name: {{ if eq (.Values.networkPolicy.faultMode | default "none") "wrong-worker-db-label" }}postgresqll{{ else }}postgresql{{ end }}
+              app.kubernetes.io/part-of: shop
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# 7. API принимает соединения от клиентского Pod по TCP 8000
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-api-ingress
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: api
+      app.kubernetes.io/part-of: shop
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/name: client
+              app.kubernetes.io/part-of: shop
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# 8. PostgreSQL принимает подключения приложения на TCP 5432.
+# TCP 8000 разрешён только Pod оператора CloudNativePG.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-db-ingress
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: shop-db
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/part-of: shop
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/name: api
+              app.kubernetes.io/part-of: shop
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/name: worker
+              app.kubernetes.io/part-of: shop
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: cnpg-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: cloudnative-pg
+      ports:
+        - protocol: TCP
+          port: 8000
+
+{{- end }}

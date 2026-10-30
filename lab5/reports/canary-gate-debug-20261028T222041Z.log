@@ -1,0 +1,94 @@
++ set -Eeuo pipefail
++++ dirname ./scripts/canary-prometheus-gate.sh
+++ cd ./scripts/..
+++ pwd
++ ROOT=/home/kate/shop-lab3
++ cd /home/kate/shop-lab3
++ MODE=bad
++ NS=shop
++ RELEASE=shop
++ EXPECTED_CONTEXT=kind-shop-lab5
++ ERROR_THRESHOLD=5
++ P95_THRESHOLD_MS=100
++ REQUEST_COUNT=160
++ PROM_PORT=19091
++ PROM_URL=http://127.0.0.1:19091
++ [[ bad != \b\a\d ]]
+++ kubectl config current-context
++ CTX=kind-shop-lab5
++ [[ kind-shop-lab5 != \k\i\n\d\-\s\h\o\p\-\l\a\b\5 ]]
+++ helm get values shop -n shop --all -o json
+++ python3 -c 'import json,sys; print(str(json.load(sys.stdin).get("api",{}).get("flaky","")).lower())'
++ API_FLAKY=false
++ [[ false != \f\a\l\s\e ]]
++ kubectl get httproute shop-api-canary -n shop
+++ helm history shop -n shop -o json
+++ python3 -c 'import json,sys; print(max(int(x["revision"]) for x in json.load(sys.stdin)))'
++ BASE_REV=25
++ [[ bad == \b\a\d ]]
++ CANARY_FAIL=true
++ WEIGHTS=(10)
+++ date -u +%Y%m%dT%H%M%SZ
++ REPORT=reports/canary-prometheus-gate-bad-20261028T222042Z.csv
++ mkdir -p reports
++ echo timestamp_utc,mode,canary_weight,canary_pod,client_200,client_500,canary_total,canary_failures,error_percent,p95_ms,decision
++ PF_PID=
++ trap cleanup EXIT
++ echo 'Режим: bad'
+Режим: bad
++ echo 'Исходная ревизия для rollback: 25'
+Исходная ревизия для rollback: 25
++ echo 'Порог ошибок canary: 5%'
+Порог ошибок canary: 5%
++ echo 'Порог P95 TTFB: 100 ms'
+Порог P95 TTFB: 100 ms
++ echo 'Число запросов за цикл: 160'
+Число запросов за цикл: 160
++ echo 'CSV-отчёт: reports/canary-prometheus-gate-bad-20261028T222042Z.csv'
+CSV-отчёт: reports/canary-prometheus-gate-bad-20261028T222042Z.csv
+++ kubectl get pods -n linkerd-viz -o name
+++ head -n 1
+++ grep /prometheus-
++ PROM_POD=pod/prometheus-75d9954f4f-lp444
++ [[ -z pod/prometheus-75d9954f4f-lp444 ]]
++ PF_PID=54069
++ READY=0
++ kubectl port-forward -n linkerd-viz pod/prometheus-75d9954f4f-lp444 19091:9090
+++ seq 1 15
++ for _ in $(seq 1 15)
++ curl -fsS --max-time 2 http://127.0.0.1:19091/-/ready
++ sleep 1
++ for _ in $(seq 1 15)
++ curl -fsS --max-time 2 http://127.0.0.1:19091/-/ready
++ READY=1
++ break
++ [[ 1 -ne 1 ]]
++ for WEIGHT in "${WEIGHTS[@]}"
++ STABLE_WEIGHT=90
++ echo
+
++ echo ==================================================
+==================================================
++ echo 'Устанавливаем веса: v1=90%, v2=10%'
+Устанавливаем веса: v1=90%, v2=10%
++ echo 'Canary FAIL=true'
+Canary FAIL=true
++ echo ==================================================
+==================================================
++ helm upgrade shop chart -n shop --reuse-values --set canary.enabled=true --set canary.replicaCount=1 --set-string canary.image.repository=shop.local/api --set-string canary.image.tag=v2 --set-string canary.image.pullPolicy=IfNotPresent --set-string canary.clientImage.repository=shop.local/api --set-string canary.clientImage.tag=v1 --set-string canary.clientImage.pullPolicy=IfNotPresent --set-string canary.fail=true --set-string canary.flaky=false --set-string canary.healthFail=false --set canary.stableWeight=90 --set canary.canaryWeight=10 --wait --timeout 5m
+Release "shop" has been upgraded. Happy Helming!
+NAME: shop
+LAST DEPLOYED: Thu Oct 29 01:20:43 2026
+NAMESPACE: shop
+STATUS: deployed
+REVISION: 26
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
++ kubectl rollout status deployment/shop-api-v2 -n shop --timeout=3m
+deployment "shop-api-v2" successfully rolled out
+++ kubectl get httproute shop-api-canary -n shop -o 'jsonpath={range .status.parents[*].conditions[*]}{.type}={.status}{" "}{.reason}{"\n"}{end}'
+Error from server (NotFound): httproutes.gateway.networking.k8s.io "shop-api-canary" not found
++ ROUTE_CONDITIONS=
++ cleanup
++ [[ -n 54069 ]]
++ kill 54069
