@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: shop-health-monitor
+  namespace: shop
+  labels:
+    app.kubernetes.io/name: health-monitor
+    app.kubernetes.io/part-of: shop
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  containers:
+    - name: monitor
+      image: shop.local/api:v2
+      imagePullPolicy: IfNotPresent
+      command: ["python", "-u", "-c"]
+      args:
+        - |
+          import time
+          from datetime import datetime, timezone
+          from urllib.request import urlopen
+
+          targets = {
+              "health": "http://shop-api:8000/health",
+              "orders": "http://shop-api:8000/orders",
+          }
+
+          total = 0
+          failures = 0
+
+          def check(url):
+              try:
+                  with urlopen(url, timeout=3) as response:
+                      return response.status
+              except Exception as exc:
+                  return str(exc)
+
+          while True:
+              results = {name: check(url) for name, url in targets.items()}
+              total += 1
+
+              if any(status != 200 for status in results.values()):
+                  failures += 1
+                  print(
+                      f"FAIL {datetime.now(timezone.utc).isoformat()} "
+                      f"results={results} failures={failures}",
+                      flush=True,
+                  )
+
+              if total % 5 == 0:
+                  print(
+                      f"CHECK total={total} health={results['health']} "
+                      f"orders={results['orders']} failures={failures}",
+                      flush=True,
+                  )
+
+              time.sleep(1)
+      resources:
+        requests:
+          cpu: "50m"
+          memory: "64Mi"
+        limits:
+          cpu: "200m"
+          memory: "128Mi"
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]

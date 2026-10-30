@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: control-plane-write-test
+  namespace: shop
+  labels:
+    app.kubernetes.io/name: control-plane-test
+    app.kubernetes.io/part-of: shop-lab3
+data:
+  marker: "created-during-control-plane-outage"
